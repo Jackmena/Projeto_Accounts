@@ -28,6 +28,7 @@ function operation() {
             if (action === 'Criar Conta') {
                 createAccount()
             } else if (action === 'Consultar Saldo') {
+                getAccountBalance()
 
             } else if (action === 'Depositar') {
                 deposit()
@@ -133,7 +134,7 @@ function addAmount(accountName, amount) {
 
     if (!amount) {
         console.log(chalk.bgRed.black('Ocorreu um erro, tente novamente mais tarde!'))
-        return false
+        return deposit()
     }
 
     accountData.balance = parseFloat(amount) + parseFloat(accountData.balance)
@@ -155,6 +156,31 @@ function getAccount(accountName) {
         encoding: 'utf-8',
         flag: 'r',
     })
-    console.log(accountJSON)
+
     return JSON.parse(accountJSON)
+}
+
+//show account balance
+function getAccountBalance() {
+    inquirer.prompt([{
+        name: 'accountName',
+        message: 'Qual o nome da sua conta?'
+    }]).then((answer) => {
+
+        const accountName = answer["accountName"]
+
+        //verify if account exists
+        if (!checkAccount(accountName)) {
+            return getAccountBalance()
+        }
+
+        const accountData = getAccount(accountName)
+
+        console.log(chalk.bgBlue.black(
+            `Olá, o saldo da sua conta é de R$${accountData.balance}`,
+        ),
+        )
+        operation()
+
+    }).catch(err => console.log(err))
 }
