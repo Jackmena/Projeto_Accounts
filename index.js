@@ -27,6 +27,7 @@ function operation() {
 
             if (action === 'Criar Conta') {
                 createAccount()
+
             } else if (action === 'Consultar Saldo') {
                 getAccountBalance()
 
@@ -34,6 +35,7 @@ function operation() {
                 deposit()
 
             } else if (action === 'Sacar') {
+                withdraw()
 
             } else if (action === 'Sair') {
                 console.log(chalk.bgBlue.black('Obrigado por usar o Accounts!'))
@@ -183,4 +185,70 @@ function getAccountBalance() {
         operation()
 
     }).catch(err => console.log(err))
+}
+
+//withdraw an amount from user account
+function withdraw() {
+    inquirer.prompt([
+        {
+            name: 'accountName',
+            message: 'Qual o nome da sua conta?'
+        }
+    ]).then((answer) => {
+
+        const accountName = answer['accountName']
+
+        if (!checkAccount(accountName)) {
+            return withdraw()
+        }
+
+        inquirer.prompt([
+            {
+                name: 'amount',
+                message: 'Quanto você deseja sacar?'
+            }
+        ]).then((answer) => {
+
+            const amount = answer['amount']
+
+            removeAmount(accountName, amount)
+            operation()
+
+        }).catch(err => console.log(err))
+
+    }).catch(err => console.log(err))
+}
+
+function removeAmount(accountName, amount) {
+
+    const accountData = getAccount(accountName)
+
+    if (!amount) {
+        console.log(
+            chalk.bgRed.black('Ocorreu um erro, tente novamente mais tarde!')
+        )
+        return
+    }
+
+    if (accountData.balance < amount) {
+        console.log(
+            chalk.bgRed.black('Valor indispinível!')
+        )
+        return
+    }
+
+    accountData.balance = parseFloat(accountData.balance) - parseFloat(amount)
+
+    fs.writeFileSync(
+        `accounts/${accountName}.json`,
+        JSON.stringify(accountData),
+        function (err) {
+            console.log(err)
+        },
+    )
+
+    console.log(
+        chalk.green(`Foi realizado um saque de R$${amount} da sua conta!`)
+    )
+
 }
